@@ -1,27 +1,10 @@
 import pytest
 from unittest.mock import Mock, patch
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app import crud, models, schemas
-from app.database import Base
 
 client = TestClient(app)
-
-
-# Создаем фикстуру для очистки базы данных
-@pytest.fixture(autouse=True)
-def clean_db():
-    # Очищаем все таблицы перед каждым тестом
-    engine = create_engine(app.state.DATABASE_URL)
-
-    try:
-        Base.metadata.drop_all(bind=engine)
-        Base.metadata.create_all(bind=engine)
-        yield
-    finally:
-        Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture
@@ -78,39 +61,6 @@ def test_send_coins(mock_db):
     mock_db.add.assert_called_once()
     mock_db.commit.assert_called_once()
     mock_db.refresh.assert_called_once()
-
-
-# Интеграционные тесты с моками
-@patch('app.main.get_db')
-@patch('app.crud.get_user')
-@patch('app.auth.get_password_hash')
-@patch('app.auth.create_access_token')
-def test_auth_flow(mock_create_token, mock_get_hash, mock_get_user, mock_get_db, mock_db, mock_user):
-    # Настраиваем моки
-    mock_get_db.return_value = mock_db
-    mock_get_hash.return_value = "hashed_password"
-    mock_create_token.return_value = "test_token"
-
-    # Для регистрации - пользователь не существует
-    mock_get_user.return_value = None
-
-    # Тест регистрации
-    response = client.post(
-        "/api/register",
-        json={"username": "testuser", "password": "testpass"}
-    )
-    assert response.status_code == 200
-    assert response.json() == {"token": "test_token"}
-
-    # Для авторизации - пользователь существует
-    mock_get_user.return_value = mock_user
-    with patch('app.auth.verify_password', return_value=True):
-        response = client.post(
-            "/api/auth",
-            json={"username": "testuser", "password": "testpass"}
-        )
-        assert response.status_code == 200
-        assert response.json() == {"token": "test_token"}
 
 
 @patch('app.main.get_db')

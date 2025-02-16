@@ -8,13 +8,14 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Устанавливаем зависимости
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install pytest pytest-cov httpx pytest-mock
 
 # Копируем весь код в контейнер
-COPY app .
+COPY . .
 
 # Порт, на котором будет работать приложение
 EXPOSE 8080
 
-# Запускаем сервер FastAPI с помощью uvicorn
+# Команда по умолчанию для запуска сервера FastAPI
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -28,10 +28,10 @@ services:
     volumes:
       - ./alembic:/app/alembic
       - ./alembic.ini:/app/alembic.ini
-      - ./app:/app/app  # Добавляем монтирование папки app
+      - ./app:/app/app
     depends_on:
       db:
-        condition: service_healthy  # Добавляем проверку здоровья
+        condition: service_healthy
     command: [ "alembic", "upgrade", "head" ]
 
   web:
@@ -48,6 +48,20 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       ALGORITHM: ${ALGORITHM}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+
+  test:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: ${ALGORITHM}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
+      PYTHONPATH: /app
+    depends_on:
+      - db
+    command: pytest -v -s
 
 volumes:
   postgres_data:

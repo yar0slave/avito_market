@@ -63,7 +63,6 @@ def get_info(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db))
         raise HTTPException(status_code=401, detail="Invalid token")
 
     inventory_items = crud.get_user_inventory(db, user.id)
-    # Группируем предметы по типу
     inventory_dict = {}
     for item in inventory_items:
         if item.name in inventory_dict:

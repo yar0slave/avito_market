@@ -11,7 +11,6 @@ class User(Base):
     password_hash = Column(String)
     coins = Column(Integer, default=1000)
 
-    # Update relationships with back_populates
     transactions_received = relationship(
         "Transaction",
         foreign_keys="Transaction.to_user_id",
@@ -33,7 +32,6 @@ class Transaction(Base):
     to_user_id = Column(Integer, ForeignKey('users.id'))
     amount = Column(Integer)
 
-    # Update relationships with back_populates
     from_user = relationship(
         "User",
         foreign_keys=[from_user_id],
@@ -53,7 +51,6 @@ class Merchandise(Base):
     name = Column(String, unique=True, index=True)
     price = Column(Integer)
 
-    # Add relationship to inventory
     inventories = relationship("Inventory", back_populates="merchandise")
 
 
